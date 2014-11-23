@@ -92,7 +92,7 @@ testAll &lt;- read.csv(&quot;pml-testing.csv&quot;)</code></pre>
 </div>
 <div id="split-training-data-for-model-fitting" class="section level2">
 <h2>Split Training data for model fitting</h2>
-<p>Derived model will be tested against the remaining training data Further data exploration will be done to assess significant predictors</p>
+<p>Derived model will be tested against the remaining training data.<br />Further data exploration is done to assess predictors and decide which should be removed. One review of test data, some columns are completely of NA values, so i decided to removed these columns from the training set.</p>
 <pre class="r"><code>set.seed(1)
 trains1 &lt;- createDataPartition(y=trainAll$classe, p=0.1,list=FALSE)
 train1d &lt;- trainAll[trains1,]
@@ -280,7 +280,7 @@ testfl   &lt;-  testNoNA[8:59]</code></pre>
 <div id="model-fit-using-subset-of-training-data-and-randomforest" class="section level2">
 <h2>Model Fit using subset of training data and randomForest</h2>
 <p>various size of predictor variables were tested from 5, 8, 10, 12, 14, 15, 16, 20, 40. mtry=12 provide the best accuracy result</p>
-<p>At this number of predictors, the results 95.76% accourate, out of sample error is very minimal 0.11% the most for class B. Overall dataset out-of-bag error is 5.04%.</p>
+<p>At this number of predictors, the result is 95.76% accurate, out of sample error is very minimal 0.11% the most (class B). Overall dataset out-of-bag error is 5.04%.</p>
 <pre class="r"><code>set.seed(2)
 trainmod &lt;- randomForest(formula = classe~.,data=train1fl, mtry=12, importance=TRUE)
 print(trainmod)</code></pre>
@@ -344,11 +344,15 @@ testClasse</code></pre>
 <p>RandomForest error rate is consistent with SVM error rate using small training model, rf mean 0.5229 , SVM mean 0.5662.</p>
 <pre class="r"><code>library(ipred)
 set.seed(12)
+ptm &lt;- proc.time()
 error.RF &lt;- numeric(10) 
 #for (i in 1:10) {
 #    error.RF[i] &lt;- errorest(classe ~., data=train1fl, model=randomForest, mtry=12)$error
 #    }
-#summary(error.RF)
+proc.time() - ptm</code></pre>
+<pre><code>##    user  system elapsed 
+##       0       0       0</code></pre>
+<pre class="r"><code>#summary(error.RF)
 
 set.seed(112)
 error.SVM &lt;- numeric(10) 

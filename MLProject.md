@@ -57,8 +57,9 @@ Code commented to reduce details
 ```
 
 ## Split Training data for model fitting
-Derived model will be tested against the remaining training data
-Further data exploration will be done to assess significant predictors
+Derived model will be tested against the remaining training data.  
+Further data exploration is done to assess predictors and decide which should be removed.  One review of test data, some columns are completely of NA values, so i decided to removed these columns from the training set.
+
 
 
 ```r
@@ -256,7 +257,7 @@ testfl   <-  testNoNA[8:59]
 ## Model Fit using subset of training data and randomForest
 various size of predictor variables were tested from 5, 8, 10, 12, 14, 15, 16, 20, 40.  mtry=12 provide the best accuracy result 
 
-At this number of predictors, the results 95.76% accourate, out of sample error is very minimal 0.11% the most for class B.  Overall dataset out-of-bag error is 5.04%. 
+At this number of predictors, the result is 95.76% accurate, out of sample error is very minimal 0.11% the most (class B).  Overall dataset out-of-bag error is 5.04%. 
 
 
 
@@ -345,10 +346,20 @@ RandomForest error rate is consistent with SVM error rate using small training m
 ```r
 library(ipred)
 set.seed(12)
+ptm <- proc.time()
 error.RF <- numeric(10) 
 #for (i in 1:10) {
 #    error.RF[i] <- errorest(classe ~., data=train1fl, model=randomForest, mtry=12)$error
 #    }
+proc.time() - ptm
+```
+
+```
+##    user  system elapsed 
+##       0       0       0
+```
+
+```r
 #summary(error.RF)
 
 set.seed(112)
