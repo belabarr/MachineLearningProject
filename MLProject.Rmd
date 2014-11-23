@@ -1,0 +1,134 @@
+---
+title: "Machine Learning Project"
+author: "Bel Abarrientos"
+date: 
+output: 
+  html_document:
+    keep_md: true
+---
+
+## Get Training and Test Data
+Some codes were commented to reduce knitr details
+
+```{r getdata}
+setwd("D:/$Study/DataScience/ML")
+#if(!file.exists("./data")){dir.create("./data")}
+#f1url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+setwd("data")
+#download.file(f1url,destfile="pml-training.csv")
+
+#f2url <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+#download.file(f2url,destfile="pml-testing.csv")
+
+trainAll <- read.csv("pml-training.csv")
+testAll <- read.csv("pml-testing.csv")
+```
+
+## Load required libraries
+
+```{r loadlibraries}
+library(caret)
+library(randomForest)
+library(e1071)
+```
+
+## Explore Data using R Studio
+Review of features and what can be considered as predictors, classes
+Code commented to reduce details
+
+```{r exploredata}
+#head(testAll)
+#head(trainAll)
+#View(testAll)
+#View(trainAll)
+
+```
+
+## Split Training data for model fitting
+Derived model will be tested against the remaining training data
+Further data exploration will be done to assess significant predictors
+
+```{r splitdata}
+set.seed(1)
+trains1 <- createDataPartition(y=trainAll$classe, p=0.1,list=FALSE)
+train1d <- trainAll[trains1,]
+train2d <- trainAll[-trains1,]
+
+nzv <- nearZeroVar(train1d, saveMetrics=TRUE)
+nzv
+```
+
+## Set-up data using Predictor Variables only
+NA columns are removed or those with UniquePercent almost zero
+
+```{r removeNAs}
+testAllNA <- testAll[,c(12:36, 50:59, 69:83,87:101, 103:112, 125:139, 141:150)]
+testAllNoNA <- testAll[,-c(12:36, 50:59, 69:83,87:101, 103:112, 125:139, 141:150)]
+colNa <- colnames(testAllNA)
+
+train1dNoNA <- train1d[,!(names(train1d) %in% colNa)]
+train2dNoNA <- train2d[,!(names(train2d) %in% colNa)]
+testNoNA <- testAll[,!(names(testAll) %in% colNa)]
+
+train1fl <- train1dNoNA[8:60]
+train2fl <- train2dNoNA[8:60]
+testfl   <-  testNoNA[8:59]
+```
+
+## Model Fit using subset of training data and randomForest
+various size of predictor variables were tested from 5, 8, 10, 12, 14, 15, 16, 20, 40.  mtry=12 provide the best accuracy result 
+
+At this number of predictors, the results 95.76% accourate, out of sample error is very minimal 0.11% the most for class B.  Overall dataset out-of-bag error is 5.04%. 
+
+
+
+```{r trainpredict, cache=TRUE}
+set.seed(2)
+trainmod <- randomForest(formula = classe~.,data=train1fl, mtry=12, importance=TRUE)
+print(trainmod)
+
+testmod <- predict(trainmod, newdata=train2fl)
+confusionMatrix(testmod,train2fl$classe)
+
+testClasse <- predict(trainmod, newdata=testfl)
+testClasse
+```
+
+## Compare random forests with support vendor machines by doing ten repititions of 10-fold cross-validation using errorest functions in ipred package.
+Code commented due to lengthy processing.
+
+```{r crossvaliderrortest, cache=TRUE}
+#library(ipred)
+#set.seed(12)
+#error.RF <- numeric(10) 
+#for (i in 1:10) {
+#    error.RF[i] <- errorest(classe ~., data=train2fl, model=randomForest, mtry=12)$error
+#    }
+#summary(error.RF)
+
+#set.seed(112)
+#error.SVM <- numeric(10) 
+#for (i in 1:10) {
+#    error.SVM[i] <- errorest(classe ~., data=train2fl, model=svm, cost=10, gamma=1.5)$error
+#    }
+#summary(error.SVM)
+```
+
+## Generate the submission files
+
+```{r gensubmitfiles}
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+
+pml_write_files(testClasse)
+
+```
+Citation:
+Data used in this assignment is from Human Activity Recognition by:
+Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.
+http://groupware.les.inf.puc-rio.br/har
