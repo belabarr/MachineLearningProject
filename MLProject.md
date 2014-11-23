@@ -256,6 +256,9 @@ testfl   <-  testNoNA[8:59]
 ## Model Fit using subset of training data and randomForest
 various size of predictor variables were tested from 5, 8, 10, 12, 14, 15, 16, 20, 40.  mtry=12 provide the best accuracy result 
 
+At this number of predictors, the results 95.76% accourate, out of sample error is very minimal 0.11% the most for class B.  Overall dataset out-of-bag error is 5.04%. 
+
+
 
 
 ```r
@@ -332,23 +335,26 @@ testClasse
 ## Levels: A B C D E
 ```
 
-## Compare random forests with support vendor machines by doing ten repititions of 10-fold cross-validation using errorest functions in ipred package.
+## Compare random forests with 10-fold cross validation
+Support Vendor Machines (SVM), ten repititions of 10-fold cross-validation using errorest functions in ipred package is compared with randomForest.
 Code commented due to lengthy processing.
+
+RandomForest error rate is consistent with SVM error rate using small training model, rf mean 0.5229 , SVM  mean 0.5662.  
 
 
 ```r
-#library(ipred)
-#set.seed(12)
-#error.RF <- numeric(10) 
+library(ipred)
+set.seed(12)
+error.RF <- numeric(10) 
 #for (i in 1:10) {
-#    error.RF[i] <- errorest(classe ~., data=train2fl, model=randomForest, mtry=12)$error
+#    error.RF[i] <- errorest(classe ~., data=train1fl, model=randomForest, mtry=12)$error
 #    }
 #summary(error.RF)
 
-#set.seed(112)
-#error.SVM <- numeric(10) 
+set.seed(112)
+error.SVM <- numeric(10) 
 #for (i in 1:10) {
-#    error.SVM[i] <- errorest(classe ~., data=train2fl, model=svm, cost=10, gamma=1.5)$error
+#    error.SVM[i] <- errorest(classe ~., data=train1fl, model=svm, cost=10, gamma=1.5)$error
 #    }
 #summary(error.SVM)
 ```
